@@ -67,3 +67,34 @@ function Time_manager() {
         }
     }
 }
+
+var fancy_inters = [];
+
+function setFancyInterval(func, time) {
+  let obj = {
+    func: func,
+    time: time,
+    ticks: 0,
+    set: false
+  }
+  
+  fancy_inters.push(obj);
+}
+
+function interval_check() {
+  for (let i = 0; i < fancy_inters.length; i++) {
+    if (fancy_inters[i].set == false) {
+      fancy_inters[i].set = true;
+      fancy_inters[i].ticks++;
+      fancy_inters[i].time = fancy_inters[i].func(fancy_inters[i].ticks);
+      
+      if (fancy_inters[i].time > 0) {
+        setTimeout(() => {
+          fancy_inters[i].set = false;
+        }, fancy_inters[i].time)
+      }else {
+        fancy_inters.splice(i, 1);
+      }
+    }
+  }
+}

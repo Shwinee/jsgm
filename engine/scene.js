@@ -11,6 +11,14 @@ var scene = new function Scene() {
         this.particles = [];
         this.emitters = [];
     }
+  
+    this.getFromId = function(id) {
+      for (let i = 0; i < this.data.length; i++) {
+        if (this.data[i].ENGINE_INFO.id == id) {
+          return i;
+        }
+      }
+    }
 
     this.point_collide = function(x, y) {
         for (let i = 0; i < this.data.length; i++) {
@@ -59,7 +67,12 @@ var scene = new function Scene() {
                 if (obj.w) {
                     if (obj.h) {
                         if (obj.render) {
-                            obj.ENGINE_INFO = this.make_object_info(obj);
+                            if (!obj.ENGINE_INFO) {
+                                obj.ENGINE_INFO = this.make_object_info(obj);
+                                if (obj.post_added) {
+                                  obj.post_added();
+                                }
+                            }
                             this.data.push(obj);
                             this.last_added_type = "Data";
                             return true;
@@ -146,11 +159,16 @@ var scene = new function Scene() {
         destroy_button.className = 'dev_tools_destroy';
         destroy_button.innerText = "Destroy";
         destroy_button.onclick = () => {
+          if (engine.confirm_destory == true) {
             if (confirm('Are you sure you want to Destroy that ' + object.constructor.name + '?')) {
                 // yes
                 this.remove(object);
                 this.hilight();
             }
+          }else {
+              this.remove(object);
+              this.hilight();
+          }
         };
 
         document.getElementById('properties').append(log_btn, destroy_button);
@@ -162,6 +180,7 @@ var scene = new function Scene() {
         o.cy = obj.y+(obj.h/2);
         o.c = {x: obj.x+(obj.w/2), y: obj.y+(obj.h/2)};
         o.id = Date.now();
+        o.components = new engine.component_holder(obj);
         
         if (obj.friction) {
             o.friction = obj.friction;
@@ -199,6 +218,7 @@ var scene = new function Scene() {
         }
         for (let i = 0; i < this.data.length; i++) {
             this.data[i].render();
+            this.data[i].ENGINE_INFO.components.update();
         }
         for (let i = 0; i < this.particles.length; i++) {
             this.particles[i].render();
@@ -250,7 +270,24 @@ function Empty(x, y, w, h) {
     this.dy = 0;
     this.w = w;
     this.h = h;
-    this.name = "Jacob";
+    this.render = function() {
+        fill(50, 50, 50);
+        this.dx *= 0.9;
+        this.dy *= 0.9;
+
+        this.x += this.dx;
+        this.y += this.dy;
+        rect(this.x, this.y, this.w, this.h);
+    }
+}
+
+function MouseObj(x, y, w, h) {
+    this.x = x;
+    this.y = y;
+    this.dx = 0;
+    this.dy = 0;
+    this.w = w;
+    this.h = h;
     this.render = function() {
         fill(50, 50, 50);
         this.dx *= 0.9;
